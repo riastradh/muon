@@ -531,6 +531,7 @@ class WebContents : public mate::TrackableObject<WebContents>,
                          const base::ListValue& args);
 
   // Called when received a synchronous message from renderer.
+  struct DispatchHelper;
   void OnRendererMessageSync(const base::string16& channel,
                              const base::ListValue& args,
                              IPC::Message* message);

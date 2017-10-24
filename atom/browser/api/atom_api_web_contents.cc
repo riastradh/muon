@@ -1417,14 +1417,27 @@ void WebContents::DevToolsClosed() {
   Emit("devtools-closed");
 }
 
+struct WebContents::DispatchHelper {
+  WebContents* web_contents;
+  content::RenderViewHost* render_view_host;
+  bool Send(IPC::Message* msg) { return render_view_host->Send(msg); }
+  void OnRendererMessageSync(const base::string16& channel,
+                             const base::ListValue& args,
+                             IPC::Message* message) {
+    web_contents->OnRendererMessageSync(channel, args, message);
+  }
+};
+
 bool WebContents::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
+  DispatchHelper helper = {this, web_contents()->GetRenderViewHost()};
   IPC_BEGIN_MESSAGE_MAP(WebContents, message)
     IPC_MESSAGE_HANDLER(AtomViewHostMsg_Message, OnRendererMessage)
-/*    IPC_MESSAGE_HANDLER_DELAY_REPLY(AtomViewHostMsg_Message_Sync,
-                                    OnRendererMessageSync)*/
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(AtomViewHostMsg_Message_Sync, &helper,
+                                    DispatchHelper::OnRendererMessageSync)
     IPC_MESSAGE_HANDLER(AtomViewHostMsg_Message_Shared, OnRendererMessageShared)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnCursorChange)
+    IPC_MESSAGE_HANDLER_CODE(ViewHostMsg_SetCursor, OnCursorChange,
+                             handled = false)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
