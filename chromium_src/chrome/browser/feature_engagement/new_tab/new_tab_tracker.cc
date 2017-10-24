@@ -6,7 +6,7 @@
 
 namespace {
 
-const int kDefaultPromoShowTimeInHours = 5;
+const int kDefaultPromoShowTimeInHours = 2;
 
 }  // namespace
 
@@ -16,7 +16,7 @@ NewTabTracker::NewTabTracker(Profile* profile,
                              SessionDurationUpdater* session_duration_updater)
     : FeatureTracker(profile,
                      session_duration_updater,
-                     nullptr, // kIPHNewTabFeature ENABLE_DESKTOP_IN_PRODUCT_HELP
+                     &kIPHNewTabFeature,
                      base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)) {
 }
 
